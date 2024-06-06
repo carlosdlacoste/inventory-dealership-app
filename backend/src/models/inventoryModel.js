@@ -9,14 +9,24 @@ const getInventoryData = () => {
 
     fs.createReadStream(filePath)
         .pipe(csv())
-        .on('data', (data) => results.push(data))
+        .on('data', (data) => {
+            results.push(data);
+        })
         .on('end', () => {
-        resolve(results);
+            resolve(results);
         })
         .on('error', (err) => {
-        reject(err);
+            reject(err);
         });
 });
 };
 
-module.exports = { getInventoryData };
+const filterInventoryData = (data, brand, startDate, endDate) => {
+    return data.filter(item => {
+        const itemDate = new Date(Number(item.timestamp));
+        const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+        return item.brand === brand && itemDateOnly >= startDate && itemDateOnly <= endDate;
+    });
+};
+
+module.exports = { getInventoryData, filterInventoryData };
