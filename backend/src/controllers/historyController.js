@@ -1,56 +1,54 @@
-// const msrpController = require('../controllers/msrpController');
-// const inventoryController = require('../controllers/inventoryController');
+const msrpController = require('../models/msrpModel');
+const inventoryController = require('../models/inventoryModel');
 
-// const buildHistoryLog = async (req, res) => {
-//     try {
-//         // Obtener datos de inventario y MSRP
-//         const inventoryData = await inventoryController.getInventory();
-//         const msrpData = await msrpController.calculateMSRPWithoutFilters();
+const buildHistoryLog = async (req, res) => {
+    try {
+        // Obtener datos de inventario y MSRP
+        const inventoryData = await inventoryController.getInventoryData();
+        const msrpData = await msrpController.getInventoryData();
 
-//         // Calcular inventario total por condición de vehículo
-//         const inventorySummary = calculateInventorySummary(inventoryData);
+        // Crear historial de datos
+        const historyLog = inventoryData.map(vehicle => {
+            const date = vehicle.timestamp;
 
-//         // Construir el historial
-//         const historyLog = {
-//             newInventory: {
-//                 count: inventorySummary.new,
-//                 totalMSRP: msrpData.new.totalMSRP,
-//                 averageMSRP: msrpData.new.averageMSRP
-//             },
-//             usedInventory: {
-//                 count: inventorySummary.used,
-//                 totalMSRP: msrpData.used.totalMSRP,
-//                 averageMSRP: msrpData.used.averageMSRP
-//             },
-//             cpo: {
-//                 count: inventorySummary.cpo,
-//                 totalMSRP: msrpData.cpo.totalMSRP,
-//                 averageMSRP: msrpData.cpo.averageMSRP
-//             }
-//         };
+            const newInventoryData = inventoryData.filter(v => v.timestamp === date && v.condition === 'new');
+            const usedInventoryData = inventoryData.filter(v => v.timestamp === date && v.condition === 'used');
+            const cpoInventoryData = inventoryData.filter(v => v.timestamp === date && v.condition === 'cpo');
 
-//         // Enviar el historial como respuesta
-//         res.json(historyLog);
-//     } catch (err) {
-//         res.status(500).json({ error: err.message });
-//     }
-// };
+            const newMsrpData = msrpData.filter(v => v.timestamp === date && v.condition === 'new');
+            const usedMsrpData = msrpData.filter(v => v.timestamp === date && v.condition === 'used');
+            const cpoMsrpData = msrpData.filter(v => v.timestamp === date && v.condition === 'cpo');
 
-// // Función para calcular el inventario total por condición de vehículo
-// const calculateInventorySummary = (inventoryData) => {
-//     const inventorySummary = {
-//         new: 0,
-//         used: 0,
-//         cpo: 0
-//     };
+            const newInventory = newInventoryData.length;
+            const newTotalMsrp = newMsrpData.reduce((sum, v) => sum + parseFloat(v.price), 0);
+            const newAverageMsrp = newInventory ? newTotalMsrp / newInventory : 0;
 
-//     // Calcular el inventario total por condición de vehículo
-//     inventoryData.forEach(vehicle => {
-//         const { condition } = vehicle;
-//         inventorySummary[condition]++;
-//     });
+            const usedInventory = usedInventoryData.length;
+            const usedTotalMsrp = usedMsrpData.reduce((sum, v) => sum + parseFloat(v.price), 0);
+            const usedAverageMsrp = usedInventory ? usedTotalMsrp / usedInventory : 0;
 
-//     return inventorySummary;
-// };
+            const cpoInventory = cpoInventoryData.length;
+            const cpoTotalMsrp = cpoMsrpData.reduce((sum, v) => sum + parseFloat(v.price), 0);
+            const cpoAverageMsrp = cpoInventory ? cpoTotalMsrp / cpoInventory : 0;
 
-// module.exports = { buildHistoryLog };
+            return {
+                timestamp: date,
+                newInventory,
+                newTotalMsrp,
+                newAverageMsrp,
+                usedInventory,
+                usedTotalMsrp,
+                usedAverageMsrp,
+                cpoInventory,
+                cpoTotalMsrp,
+                cpoAverageMsrp
+            };
+        });
+
+        res.json(historyLog);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { buildHistoryLog };
