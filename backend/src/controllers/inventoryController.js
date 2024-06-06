@@ -28,4 +28,38 @@ const getFilteredInventory = async (req, res) => {
     }
 };
 
-module.exports = { getInventory, getFilteredInventory };
+const calculateInventory = async (req, res) => {
+    try {
+            // Obtener datos del inventario
+            const inventoryData = await inventoryModel.getInventoryData();
+
+            // Calcular el inventario por condición y marca
+            const inventorySummary = calculateInventorySummary(inventoryData);
+
+            // Enviar el resumen del inventario como respuesta
+            res.json(inventorySummary);
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    };
+
+    const calculateInventorySummary = (inventoryData) => {
+        const inventorySummary = {
+        new: {},
+        used: {},
+        cpo: {}
+        };
+
+        // Calcular el inventario por condición y marca
+        inventoryData.forEach(vehicle => {
+            const { condition, brand } = vehicle;
+            if (!inventorySummary[condition][brand]) {
+                inventorySummary[condition][brand] = 0;
+            }
+            inventorySummary[condition][brand]++;
+        });
+
+    return inventorySummary;
+  };
+
+module.exports = { getInventory, getFilteredInventory, calculateInventory };
