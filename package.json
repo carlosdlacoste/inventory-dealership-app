@@ -11,6 +11,6 @@
         "install": "npm install --prefix backend && npm install --prefix frontend"
     },
     "devDependencies": {
-        "concurrently": "^6.0.0"
+        "concurrently": "^6.5.1"
     }
 }
