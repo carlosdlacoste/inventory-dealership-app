@@ -88,20 +88,20 @@ const calculateMSRPSummary = (inventoryData) => {
     inventoryData.forEach(vehicle => {
         const { condition, brand, price } = vehicle;
         if (price) {
-        const priceValue = parseFloat(price);
-        const adjustmentFactor = adjustmentFactors[brand] || 1.1; // Usar un factor por defecto si la marca no está en la lista
-        const estimatedMSRP = priceValue * adjustmentFactor;
+            const priceValue = parseFloat(price);
+            const adjustmentFactor = adjustmentFactors[brand] || 1.1; // Usar un factor por defecto si la marca no está en la lista
+            const estimatedMSRP = priceValue * adjustmentFactor;
 
-        if (!isNaN(estimatedMSRP)) {
-            msrpSummary[condition].totalMSRP += estimatedMSRP;
-            msrpSummary[condition].count++;
-        }
+            if (!isNaN(estimatedMSRP)) {
+                msrpSummary[condition].totalMSRP += estimatedMSRP;
+                msrpSummary[condition].count++;
+            }
         }
     });
 
     Object.keys(msrpSummary).forEach(condition => {
         if (msrpSummary[condition].count > 0) {
-        msrpSummary[condition].averageMSRP = msrpSummary[condition].totalMSRP / msrpSummary[condition].count;
+            msrpSummary[condition].averageMSRP = msrpSummary[condition].totalMSRP / msrpSummary[condition].count;
         }
     });
 
